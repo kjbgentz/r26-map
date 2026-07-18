@@ -256,14 +256,20 @@ let labelTimer=null;
 function scheduleLabels(){ clearTimeout(labelTimer); labelTimer=setTimeout(renderLabels,140); }
 function renderLabels(){
   if(VB.w >= T_LABELS){ gLabels.innerHTML=''; return; }
+  const minLen = VB.w*MI_PER_UNIT*0.06;   // only name roads long enough to matter at this zoom
   const inView = STREETS.labels.filter(l=>{
+    if(l.len < minLen) return false;
     const X=wx(l.lon),Y=wy(l.lat);
     return X>VB.x&&X<VB.x+VB.w&&Y>VB.y&&Y<VB.y+VB.h;
   });
   inView.sort((p,q)=> (p.c<q.c?-1:p.c>q.c?1:q.len-p.len));
-  const fs = Math.max(1.4, VB.w/46);
+  const fs = 11.5 * VB.w / stage.clientWidth;   // constant ~11.5px on screen at any zoom
+  const seen = new Set();
   let out='';
-  for(const l of inView.slice(0,110)){
+  for(const l of inView){
+    if(seen.size>=70) break;
+    if(seen.has(l.n)) continue;
+    seen.add(l.n);
     const X=wx(l.lon),Y=wy(l.lat);
     out+=`<text x="${X.toFixed(1)}" y="${Y.toFixed(1)}" transform="rotate(${l.a} ${X.toFixed(1)} ${Y.toFixed(1)})" font-size="${fs.toFixed(2)}" font-weight="600" fill="#757264" text-anchor="middle" style="paint-order:stroke;stroke:#f6f4ec;stroke-width:${(fs*0.28).toFixed(2)}px">${l.n.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</text>`;
   }
