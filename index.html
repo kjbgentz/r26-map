@@ -61,7 +61,8 @@
     display:flex;align-items:center;gap:4px;padding:8px;
   }
   .poi .dot{width:10px;height:10px;border-radius:50%;background:#7a6db3;border:2px solid #fff;box-shadow:0 1px 2px rgba(0,0,0,.4);flex:0 0 auto;}
-  .poi .nm{font-size:11px;font-weight:700;color:#4d4494;text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff;white-space:nowrap;max-width:130px;overflow:hidden;text-overflow:ellipsis;}
+  .poi .nm{display:none;font-size:11px;font-weight:700;color:#4d4494;text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff;white-space:nowrap;max-width:130px;overflow:hidden;text-overflow:ellipsis;}
+  body.poinames .poi .nm{display:block;}
   .townlbl{
     position:absolute;transform:translate(-50%,12px);
     pointer-events:none;font-weight:800;font-size:14px;
@@ -256,7 +257,8 @@ let labelTimer=null;
 function scheduleLabels(){ clearTimeout(labelTimer); labelTimer=setTimeout(renderLabels,140); }
 function renderLabels(){
   if(VB.w >= T_LABELS){ gLabels.innerHTML=''; return; }
-  const minLen = VB.w*MI_PER_UNIT*0.06;   // only name roads long enough to matter at this zoom
+  const small = stage.clientWidth < 700;
+  const minLen = VB.w*MI_PER_UNIT*(small?0.14:0.06);   // small screens: name fewer, longer roads
   const inView = STREETS.labels.filter(l=>{
     if(l.len < minLen) return false;
     const X=wx(l.lon),Y=wy(l.lat);
@@ -267,7 +269,7 @@ function renderLabels(){
   const seen = new Set();
   let out='';
   for(const l of inView){
-    if(seen.size>=70) break;
+    if(seen.size >= (small?26:70)) break;
     if(seen.has(l.n)) continue;
     seen.add(l.n);
     const X=wx(l.lon),Y=wy(l.lat);
@@ -324,6 +326,7 @@ function paintOverlay(){
     it.el.classList.toggle('dim', activeDay!=null && p.day!==activeDay);
   }
   const poiOn = showPOI && VB.w < T_LABELS;
+  document.body.classList.toggle('poinames', VB.w < (stage.clientWidth<700 ? 22 : 38));
   for(const it of poiEls){
     if(!poiOn){ it.el.style.display='none'; continue; }
     const sx=(it.X-VB.x)/VB.w*W, sy=(it.Y-VB.y)/VB.h*H;
@@ -383,7 +386,7 @@ function zoomAt(px,py,f){
   const rect=stage.getBoundingClientRect();
   const mx=VB.x+(px-rect.left)/W*VB.w, my=VB.y+(py-rect.top)/H*VB.h;
   let w=VB.w*f,h=VB.h*f;
-  const maxW=WORLD.w*1.6, minW=WORLD.w/700;
+  const maxW=WORLD.w*1.6, minW=WORLD.w/4200;
   if(w>maxW||w<minW)return;
   setVB({x:mx-(mx-VB.x)*f,y:my-(my-VB.y)*f,w,h});
 }
