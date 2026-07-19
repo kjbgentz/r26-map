@@ -60,8 +60,10 @@
     pointer-events:auto;cursor:pointer;
     display:flex;align-items:center;gap:4px;padding:8px;
   }
-  .poi .dot{width:10px;height:10px;border-radius:50%;background:#7a6db3;border:2px solid #fff;box-shadow:0 1px 2px rgba(0,0,0,.4);flex:0 0 auto;}
-  .poi .nm{display:none;font-size:10px;font-weight:700;color:#4d4494;text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff;white-space:nowrap;max-width:130px;overflow:hidden;text-overflow:ellipsis;}
+  .poi .ic{width:18px;height:18px;border-radius:50%;background:#fff;border:1.5px solid #26251f;
+    box-shadow:0 1px 2px rgba(0,0,0,.35);flex:0 0 auto;display:flex;align-items:center;justify-content:center;}
+  .poi .ic span{font-size:10px;line-height:1;filter:grayscale(1) brightness(0.55) contrast(1.4);}
+  .poi .nm{display:none;font-size:10px;font-weight:700;color:#44423a;text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff;white-space:nowrap;max-width:130px;overflow:hidden;text-overflow:ellipsis;}
   body.poinames .poi .nm{display:block;}
   .townlbl{
     position:absolute;transform:translate(-50%,12px);
@@ -356,10 +358,21 @@ function buildPins(){
     overlay.appendChild(el);
     pinEls.push({el,p:{cat:'lbl',day:t.d},X:wx(t.lon),Y:wy(t.lat),isLbl:true});
   });
+  const POIGLYPH = {
+    'restaurant':'🍴','food court':'🍴','fast food':'🍔','cafe':'☕','coffee':'☕',
+    'bar':'🍺','pub':'🍺','biergarten':'🍺','bakery':'🥐','confectionery':'🧁','ice cream':'🍦',
+    'supermarket':'🛒','greengrocer':'🛒','convenience':'🏪','variety store':'🏪','general':'🏪','department store':'🏪',
+    'deli':'🥪','butcher':'🥩','alcohol':'🍷','wine':'🍷','farm':'🌻','garden centre':'🌻','marketplace':'🛍️',
+    'fuel':'⛽','pharmacy':'💊','hospital':'🏥','car repair':'🔧','car parts':'🔧','bicycle':'🚲',
+    'hardware':'🔨','doityourself':'🔨','atm':'💵','cinema':'🎬','theatre':'🎭',
+    'antiques':'🛍️','gift':'🛍️','art':'🖼️','craft':'🧶','jewelry':'💍','second hand':'🛍️',
+    'books':'📚','clothes':'👕','shoes':'👟','toys':'🧸','sports':'🎽','outdoor':'⛺'
+  };
   STREETS.pois.forEach(p=>{
     const el=document.createElement('div');
     el.className='poi';
-    el.innerHTML=`<div class="dot"></div><div class="nm">${p.n.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div>`;
+    const g = POIGLYPH[p.k] || '📍';
+    el.innerHTML=`<div class="ic"><span>${g}</span></div><div class="nm">${p.n.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div>`;
     el.style.display='none';
     el.addEventListener('click',()=>openSheet('Nearby · '+p.k, p.n, '<p class="warn">From OpenStreetMap — hours/status not guaranteed.</p>'));
     overlay.appendChild(el);
@@ -398,7 +411,7 @@ function paintOverlay(){
     it.el.style.display=off?'none':'';
     if(!off){ it.el.style.left=sx+'px'; it.el.style.top=sy+'px'; }
   }
-  const poiOn = showPOI && VB.w < (stage.clientWidth<700 ? 18 : 30);
+  const poiOn = showPOI && VB.w < (stage.clientWidth<700 ? 28 : 45);
   document.body.classList.toggle('poinames', VB.w < (stage.clientWidth<700 ? 4.5 : 8));
   if(!poiOn && !poiWasOn){ if(gpsPos) placeGps(); return; }
   poiWasOn = poiOn;
